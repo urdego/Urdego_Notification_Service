@@ -4,6 +4,10 @@ plugins {
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
+ext {
+    springCloudVersion = "2023.0.5"
+}
+
 group = 'Urdego.io'
 version = '0.0.1-SNAPSHOT'
 
@@ -27,8 +31,9 @@ dependencies {
     //Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter-web'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    //Spring Cloud
 
+    //Spring Cloud
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
     //Lombok
     compileOnly 'org.projectlombok:lombok'
@@ -38,12 +43,19 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
     //Redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
     //Swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
 
     //Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion"
+    }
 }
 
 tasks.named('test') {
