@@ -4,6 +4,8 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import urdego.io.urdego_notification_service.controller.dto.request.ContentSelectReq;
+import urdego.io.urdego_notification_service.controller.dto.request.PlayerReq;
 import urdego.io.urdego_notification_service.controller.dto.response.RoomPlayersRes;
 
 @FeignClient(name = "game-service", url = "${feign.client.config.service.url}")
