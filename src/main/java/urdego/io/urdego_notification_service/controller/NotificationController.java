@@ -12,14 +12,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import urdego.io.urdego_notification_service.controller.dto.request.NotificationRequest;
-import urdego.io.urdego_notification_service.controller.dto.response.NotificationResponse;
 import urdego.io.urdego_notification_service.controller.dto.response.WebSocketMessageResponse;
 import urdego.io.urdego_notification_service.domain.entity.Notification;
 import urdego.io.urdego_notification_service.domain.service.NotificationService;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("api/notification-service/notifications")
+@RequestMapping("/api/notification-service/notifications")
 @Slf4j
 public class NotificationController {
     private final NotificationService notificationService;
