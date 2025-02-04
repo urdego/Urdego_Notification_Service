@@ -1,7 +1,7 @@
 package urdego.io.urdego_notification_service.domain.service;
 
-import urdego.io.urdego_notification_service.controller.dto.request.NotificationRequest;
-import urdego.io.urdego_notification_service.controller.dto.response.WebSocketMessageRes;
+import urdego.io.urdego_notification_service.controller.dto.request.notification.NotificationRequest;
+import urdego.io.urdego_notification_service.controller.dto.WebSocketMessage;
 import urdego.io.urdego_notification_service.domain.entity.Notification;
 
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.List;
 public interface NotificationService {
 
     //메세지 발행
-    public WebSocketMessageRes<Notification> publishNotification(NotificationRequest notificationRequest);
+    public WebSocketMessage<Notification> publishNotification(NotificationRequest notificationRequest);
 
     //사용자 별 메세지 확인
     List<Object> getUserNotifications(Long userId);

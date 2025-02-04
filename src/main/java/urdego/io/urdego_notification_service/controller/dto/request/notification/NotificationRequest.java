@@ -1,4 +1,4 @@
-package urdego.io.urdego_notification_service.controller.dto.request;
+package urdego.io.urdego_notification_service.controller.dto.request.notification;
 
 import lombok.Builder;
 import urdego.io.urdego_notification_service.domain.entity.Notification;

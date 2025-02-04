@@ -1,4 +1,4 @@
-package urdego.io.urdego_notification_service.controller.dto.response;
+package urdego.io.urdego_notification_service.controller.dto.response.room;
 
 import urdego.io.urdego_notification_service.common.enums.Status;
 
