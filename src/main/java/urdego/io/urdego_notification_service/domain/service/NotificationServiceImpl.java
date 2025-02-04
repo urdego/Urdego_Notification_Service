@@ -36,7 +36,6 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public WebSocketMessage<Notification> publishNotification(NotificationRequest request) {
         Notification notification = Notification.of(request);
-
         //프로토콜 감싸기
         WebSocketMessage<Notification> message = new WebSocketMessage<>(MessageType.NOTIFICATION, notification);
         simpMessagingTemplate.convertAndSend("/urdego/sub/notifications/" + notification.getTargetId(), message);
@@ -63,15 +62,11 @@ public class NotificationServiceImpl implements NotificationService {
         updatedNotification.updateReply(request.isAccepted());
 
         //redis에 수정사항 저장
+        //TODO 수정 후 redis에 저장이 안됨..;;
         redisTemplate.opsForList().set(key,index, updatedNotification);
         return updatedNotification;
     }
 
-
-    @Override
-    public String getLastReadMessage(String userId) {
-        return "";
-    }
 
     @Override
     public void saveNotification(Notification notification) {
@@ -80,13 +75,14 @@ public class NotificationServiceImpl implements NotificationService {
         redisTemplate.expire(key,EXPIRATION_TIME, TimeUnit.DAYS);
     }
 
-    //키에 대한 벨류 조회
-    private List<Notification> readNotificationList(Long userId) {
+    @Override
+    public List<Notification> readNotificationList(Long userId) {
         // 키 생성
         String key = PREFIX + userId;
 
         List<Object> rawNotification = redisTemplate.opsForList().range(key, 0, -1);
         if(rawNotification == null || rawNotification.size() == 0) { throw NotFoundNotification.EXCEPTION;}
+
         //Object -> Notification
         List<Notification> notifications = rawNotification.stream().filter(obj -> obj instanceof Notification)
                 .map(obj -> (Notification) obj).collect(Collectors.toList());

@@ -25,9 +25,6 @@ import urdego.io.urdego_notification_service.domain.service.NotificationService;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Controller
 @RequiredArgsConstructor
@@ -35,8 +32,7 @@ import java.util.stream.IntStream;
 @Slf4j
 public class NotificationController {
     private final NotificationService notificationService;
-    private static final String PREFIX = "urdego_notification:";
-    private final RedisTemplate<String, Object> redisTemplate;
+    //TODO : Response에 Entity를 리턴하는 행위는 좋지 않음 차후 NotificationResponse로 수정해야 함
 
     @PostMapping("/send")
     @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = WebSocketMessage.class)))
@@ -45,11 +41,20 @@ public class NotificationController {
         WebSocketMessage<Notification> response = notificationService.publishNotification(request);
         return ResponseEntity.ok().body(response);
     }
+
     @GetMapping("/{userId}/reply")
     @Operation(summary = "알림 답장", description = "notificationId로 게임초대 알림에 대한 답변 받기")
     public ResponseEntity<Object> replyNotification(@PathVariable("userId") Long userId,
                                                   @RequestBody ReplyRequest request) {
         Notification updatedNotification = notificationService.updateReadStatus(request, userId);
         return ResponseEntity.ok().body(updatedNotification);
+    }
+
+    @GetMapping("/{userId}")
+    @Operation(summary = "알림 조회", description = "userId로 해당 유저에게 전달된 전체 알림 조회")
+    public ResponseEntity<List<Notification>> getNotifications(@PathVariable("userId") Long userId) {
+
+        List<Notification> notifications = notificationService.readNotificationList(userId);
+        return ResponseEntity.ok().body(notifications);
     }
 }
