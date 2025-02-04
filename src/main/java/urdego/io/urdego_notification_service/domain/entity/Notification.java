@@ -1,6 +1,7 @@
 package urdego.io.urdego_notification_service.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,8 +19,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @Component
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Notification implements Serializable {
-    private UUID NotificationId;
+    private UUID notificationId;
 
     private Long senderId;
     private Long targetId;
@@ -30,12 +32,18 @@ public class Notification implements Serializable {
     private String targetNickname;
     private Action action;
 
+    //수락여부
+    private boolean isAccepted;
+
+    //읽기 여부
+    private boolean isRead;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private String timestamp;
 
     public static Notification of(NotificationRequest request){
         return Notification.builder()
-                .NotificationId(UUID.randomUUID())
+                .notificationId(UUID.randomUUID())
                 .roomId(request.roomId())
                 .roomName(request.roomName())
                 .senderId(request.senderId())
@@ -46,4 +54,10 @@ public class Notification implements Serializable {
                 .timestamp(LocalDateTime.now().toString())
                 .build();
     }
+
+    public void updateReply(boolean isAccepted) {
+        this.isAccepted = isAccepted;
+        this.isRead = true;
+    }
+
 }
