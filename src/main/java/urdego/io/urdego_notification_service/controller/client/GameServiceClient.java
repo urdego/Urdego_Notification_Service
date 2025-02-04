@@ -8,7 +8,7 @@ import urdego.io.urdego_notification_service.controller.dto.request.ContentSelec
 import urdego.io.urdego_notification_service.controller.dto.request.PlayerReq;
 import urdego.io.urdego_notification_service.controller.dto.response.RoomPlayersRes;
 
-@FeignClient(name = "game-service", url = "${feign.client.config.service.url}")
+@FeignClient(name = "game-service")
 public interface GameServiceClient {
     @PostMapping("/player/invite")
     ResponseEntity<RoomPlayersRes> invitePlayer(@RequestBody PlayerReq request);

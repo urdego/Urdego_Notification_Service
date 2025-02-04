@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class WebSocketMessageResponse<T> {
+public class WebSocketMessageRes<T> {
+    private String messageType;
     private T data;
 }

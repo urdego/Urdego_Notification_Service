@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import urdego.io.urdego_notification_service.controller.dto.request.NotificationRequest;
-import urdego.io.urdego_notification_service.controller.dto.response.WebSocketMessageResponse;
+import urdego.io.urdego_notification_service.controller.dto.response.WebSocketMessageRes;
 import urdego.io.urdego_notification_service.domain.entity.Notification;
 import urdego.io.urdego_notification_service.domain.service.NotificationService;
 
@@ -24,10 +24,10 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @PostMapping("/send")
-    @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = WebSocketMessageResponse.class)))
+    @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = WebSocketMessageRes.class)))
     @Operation(summary = "게임초대 알림 전송",description = "userId로 게임초대 알림 전송")
-    public ResponseEntity<WebSocketMessageResponse<Notification>> sendNotification(@RequestBody NotificationRequest request) {
-        WebSocketMessageResponse<Notification> response = notificationService.publishNotification(request);
+    public ResponseEntity<WebSocketMessageRes<Notification>> sendNotification(@RequestBody NotificationRequest request) {
+        WebSocketMessageRes<Notification> response = notificationService.publishNotification(request);
         return ResponseEntity.ok().body(response);
 
     }
