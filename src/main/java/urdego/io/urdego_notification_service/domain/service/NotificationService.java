@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.UUID;
 
 public interface NotificationService {
+    //저장
+    void saveNotification(Notification notification);
 
     //메세지 발행
     WebSocketMessageResponse<Notification> publishNotification(NotificationRequest notificationRequest);
@@ -18,8 +20,6 @@ public interface NotificationService {
     // 답장 및 읽음 상태 변경
     Notification updateReadStatus(ReplyRequest request, Long userId);
 
-    //읽음 상태 조회
-    String getLastReadMessage(String userId);
-
-    void saveNotification(Notification notification);
+    //조회
+    List<Notification> readNotificationList(Long userId);
 }

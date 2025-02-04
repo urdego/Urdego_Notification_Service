@@ -33,7 +33,6 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public WebSocketMessageResponse<Notification> publishNotification(NotificationRequest request) {
         Notification notification = Notification.of(request);
-
         //프로토콜 감싸기
         WebSocketMessageResponse<Notification> message = new WebSocketMessageResponse<>(notification);
         simpMessagingTemplate.convertAndSend("/urdego/sub/notifications/" + notification.getTargetId(), message);
@@ -48,7 +47,7 @@ public class NotificationServiceImpl implements NotificationService {
     public Notification updateReadStatus(ReplyRequest request, Long userId) {
         // 키 생성
         String key = PREFIX + userId;
-        
+
         List<Notification> notifications = readNotificationList(userId);
 
         //notificationId의 알림 index 찾기 없으면 Exception!!
@@ -60,15 +59,11 @@ public class NotificationServiceImpl implements NotificationService {
         updatedNotification.updateReply(request.isAccepted());
 
         //redis에 수정사항 저장
+        //TODO 수정 후 redis에 저장이 안됨..;;
         redisTemplate.opsForList().set(key,index, updatedNotification);
         return updatedNotification;
     }
 
-
-    @Override
-    public String getLastReadMessage(String userId) {
-        return "";
-    }
 
     @Override
     public void saveNotification(Notification notification) {
@@ -77,13 +72,14 @@ public class NotificationServiceImpl implements NotificationService {
         redisTemplate.expire(key,EXPIRATION_TIME, TimeUnit.DAYS);
     }
 
-    //키에 대한 벨류 조회
-    private List<Notification> readNotificationList(Long userId) {
+    @Override
+    public List<Notification> readNotificationList(Long userId) {
         // 키 생성
         String key = PREFIX + userId;
 
         List<Object> rawNotification = redisTemplate.opsForList().range(key, 0, -1);
         if(rawNotification == null || rawNotification.size() == 0) { throw NotFoundNotification.EXCEPTION;}
+
         //Object -> Notification
         List<Notification> notifications = rawNotification.stream().filter(obj -> obj instanceof Notification)
                 .map(obj -> (Notification) obj).collect(Collectors.toList());
