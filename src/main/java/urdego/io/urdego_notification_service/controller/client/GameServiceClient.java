@@ -17,29 +17,28 @@ import urdego.io.urdego_notification_service.controller.dto.response.game.ScoreR
 import urdego.io.urdego_notification_service.controller.dto.response.room.RoomPlayersRes;
 
 @FeignClient(name = "game-service")
-@RequestMapping("/api/game-service")
 public interface GameServiceClient {
-    @PostMapping("/room/player/invite")
+    @PostMapping("/api/game-service/room/player/invite")
     ResponseEntity<RoomPlayersRes> invitePlayer(@RequestBody PlayerReq request);
 
-    @PostMapping("/room/player/remove")
+    @PostMapping("/api/game-service/room/player/remove")
     ResponseEntity<RoomPlayersRes> removePlayer(@RequestBody PlayerReq request);
 
-    @PostMapping("/room/player/ready")
+    @PostMapping("/api/game-service/room/player/ready")
     ResponseEntity<RoomPlayersRes> readyPlayer(@RequestBody PlayerReq request);
 
-    @PostMapping("/room/select-content")
+    @PostMapping("/api/game-service/room/select-content")
     ResponseEntity<Void> selectContent(@RequestBody ContentSelectReq request);
 
-    @PostMapping("/game/score")
+    @PostMapping("/api/game-service/game/score")
     ResponseEntity<ScoreRes> giveScores(@RequestBody ScoreReq request);
 
-    @PostMapping("/game/end")
+    @PostMapping("/api/game-service/game/end")
     ResponseEntity<GameEndRes> endGame(@RequestBody String gameId);
 
-    @PostMapping("/round/question")
+    @PostMapping("/api/game-service/round/question")
     ResponseEntity<QuestionRes> giveQuestion(@RequestBody QuestionReq request);
 
-    @PostMapping("/round/answer")
+    @PostMapping("/api/game-service/round/answer")
     ResponseEntity<AnswerRes> submitAnswer(@RequestBody AnswerReq request);
 }
