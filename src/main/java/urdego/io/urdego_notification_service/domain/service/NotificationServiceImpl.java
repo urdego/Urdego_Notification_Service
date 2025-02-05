@@ -5,9 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import urdego.io.urdego_notification_service.controller.dto.request.NotificationRequest;
-import urdego.io.urdego_notification_service.controller.dto.response.NotificationResponse;
-import urdego.io.urdego_notification_service.controller.dto.response.WebSocketMessageResponse;
+import urdego.io.urdego_notification_service.common.enums.MessageType;
+import urdego.io.urdego_notification_service.controller.dto.request.notification.NotificationRequest;
+import urdego.io.urdego_notification_service.controller.dto.WebSocketMessage;
 import urdego.io.urdego_notification_service.domain.entity.Notification;
 
 import java.util.List;
@@ -23,11 +23,11 @@ public class NotificationServiceImpl implements NotificationService {
     private static final long EXPIRATION_TIME = 3;
 
     @Override
-    public WebSocketMessageResponse<Notification> publishNotification(NotificationRequest request) {
+    public WebSocketMessage<Notification> publishNotification(NotificationRequest request) {
         Notification notification = Notification.of(request);
 
         //프로토콜 감싸기
-        WebSocketMessageResponse<Notification> message = new WebSocketMessageResponse<>(notification);
+        WebSocketMessage<Notification> message = new WebSocketMessage<>(MessageType.NOTIFICATION, notification);
         simpMessagingTemplate.convertAndSend("/urdego/sub/notifications/" + notification.getTargetId(), message);
         log.info("Published notification : senderId {}, targetId {}  " , notification.getSenderId(), notification.getTargetId());
 

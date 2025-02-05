@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 import urdego.io.urdego_notification_service.common.enums.Action;
-import urdego.io.urdego_notification_service.controller.dto.request.NotificationRequest;
+import urdego.io.urdego_notification_service.controller.dto.request.notification.NotificationRequest;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;

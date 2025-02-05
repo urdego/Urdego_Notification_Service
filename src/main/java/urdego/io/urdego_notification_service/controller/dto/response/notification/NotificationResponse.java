@@ -1,4 +1,4 @@
-package urdego.io.urdego_notification_service.controller.dto.response;
+package urdego.io.urdego_notification_service.controller.dto.response.notification;
 
 import java.util.UUID;
 
