@@ -15,6 +15,7 @@ import urdego.io.urdego_notification_service.controller.dto.request.notification
 import urdego.io.urdego_notification_service.domain.entity.Notification;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -60,10 +61,9 @@ public class NotificationServiceImpl implements NotificationService {
 
         //redis에 수정사항 저장
         //TODO 수정 후 redis에 저장이 안됨..;;
-        redisTemplate.opsForList().set(key,index, notifications);
+        redisTemplate.opsForList().set(key,index, updatedNotification);
         return updatedNotification;
     }
-
 
     @Override
     public void saveNotification(Notification notification) {

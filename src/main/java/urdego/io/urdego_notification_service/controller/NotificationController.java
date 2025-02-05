@@ -34,6 +34,7 @@ public class NotificationController {
     @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = WebSocketMessage.class)))
     @Operation(summary = "게임초대 알림 전송",description = "userId로 게임초대 알림 전송")
     public ResponseEntity<WebSocketMessage<Notification>> sendNotification(@RequestBody NotificationRequest request) {
+        //uri가 send로 나눌 필요가 있나? {userId}로 해도 되지 않나? or PK는 숨기는 좋을까?
         WebSocketMessage<Notification> response = notificationService.publishNotification(request);
         return ResponseEntity.ok().body(response);
     }

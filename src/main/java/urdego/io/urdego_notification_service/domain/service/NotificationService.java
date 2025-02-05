@@ -1,11 +1,13 @@
 package urdego.io.urdego_notification_service.domain.service;
 
+import org.springframework.stereotype.Service;
 import urdego.io.urdego_notification_service.controller.dto.WebSocketMessage;
 import urdego.io.urdego_notification_service.controller.dto.request.ReplyRequest;
 import urdego.io.urdego_notification_service.controller.dto.request.notification.NotificationRequest;
 import urdego.io.urdego_notification_service.domain.entity.Notification;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface NotificationService {
     //저장
