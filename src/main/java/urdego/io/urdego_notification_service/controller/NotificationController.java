@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import urdego.io.urdego_notification_service.common.exception.notification.NotFoundNotification;
@@ -34,17 +36,17 @@ public class NotificationController {
     private final NotificationService notificationService;
     //TODO : Response에 Entity를 리턴하는 행위는 좋지 않음 차후 NotificationResponse로 수정해야 함
 
-    @PostMapping("/send")
-    @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = WebSocketMessage.class)))
+    @MessageMapping("/send")
+    @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = WebSocketMessageResponse.class)))
     @Operation(summary = "게임초대 알림 전송",description = "userId로 게임초대 알림 전송")
     public ResponseEntity<WebSocketMessage<Notification>> sendNotification(@RequestBody NotificationRequest request) {
         WebSocketMessage<Notification> response = notificationService.publishNotification(request);
         return ResponseEntity.ok().body(response);
     }
 
-    @GetMapping("/{userId}/reply")
+    @MessageMapping("/{userId}/reply")
     @Operation(summary = "알림 답장", description = "notificationId로 게임초대 알림에 대한 답변 받기")
-    public ResponseEntity<Object> replyNotification(@PathVariable("userId") Long userId,
+    public ResponseEntity<Object> replyNotification(@DestinationVariable("userId") Long userId,
                                                   @RequestBody ReplyRequest request) {
         Notification updatedNotification = notificationService.updateReadStatus(request, userId);
         return ResponseEntity.ok().body(updatedNotification);
