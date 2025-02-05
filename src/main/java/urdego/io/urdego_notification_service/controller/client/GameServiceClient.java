@@ -4,6 +4,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import urdego.io.urdego_notification_service.controller.dto.request.game.AnswerReq;
 import urdego.io.urdego_notification_service.controller.dto.request.game.QuestionReq;
 import urdego.io.urdego_notification_service.controller.dto.request.game.ScoreReq;
@@ -16,28 +17,29 @@ import urdego.io.urdego_notification_service.controller.dto.response.game.ScoreR
 import urdego.io.urdego_notification_service.controller.dto.response.room.RoomPlayersRes;
 
 @FeignClient(name = "game-service")
+@RequestMapping("/api/game-service")
 public interface GameServiceClient {
-    @PostMapping("/api/game-service/room/player/invite")
+    @PostMapping("/room/player/invite")
     ResponseEntity<RoomPlayersRes> invitePlayer(@RequestBody PlayerReq request);
 
-    @PostMapping("/api/game-service/room/player/remove")
+    @PostMapping("/room/player/remove")
     ResponseEntity<RoomPlayersRes> removePlayer(@RequestBody PlayerReq request);
 
-    @PostMapping("/api/game-service/room/player/ready")
+    @PostMapping("/room/player/ready")
     ResponseEntity<RoomPlayersRes> readyPlayer(@RequestBody PlayerReq request);
 
-    @PostMapping("/api/game-service/room/select-content")
+    @PostMapping("/room/select-content")
     ResponseEntity<Void> selectContent(@RequestBody ContentSelectReq request);
 
-    @PostMapping("/api/game-service/game/score")
+    @PostMapping("/game/score")
     ResponseEntity<ScoreRes> giveScores(@RequestBody ScoreReq request);
 
-    @PostMapping("/api/game-service/game/end")
+    @PostMapping("/game/end")
     ResponseEntity<GameEndRes> endGame(@RequestBody String gameId);
 
-    @PostMapping("/api/game-service/round/question")
+    @PostMapping("/round/question")
     ResponseEntity<QuestionRes> giveQuestion(@RequestBody QuestionReq request);
 
-    @PostMapping("/api/game-service/round/answer")
+    @PostMapping("/round/answer")
     ResponseEntity<AnswerRes> submitAnswer(@RequestBody AnswerReq request);
 }
