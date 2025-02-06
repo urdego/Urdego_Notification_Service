@@ -15,7 +15,6 @@ import urdego.io.urdego_notification_service.controller.dto.request.notification
 import urdego.io.urdego_notification_service.domain.entity.Notification;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
