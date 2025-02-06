@@ -54,20 +54,16 @@ public class NotificationServiceImpl implements NotificationService {
         int index = IntStream.range(0, notifications.size())
                 .filter(i -> notifications.get(i).getNotificationId().toString().equals(request.notificationId()))
                 .findFirst().orElseThrow(() -> InvalidNotificationId.EXCEPTION);
-        log.info("index : {}", index);
 
         Notification updatedNotification = notifications.get(index);
         updatedNotification.updateReply(request.isAccepted());
-        WebSocketMessage<Notification> updateMessage = new WebSocketMessage<>(MessageType.NOTIFICATION, updatedNotification);
-        simpMessagingTemplate.convertAndSend("/urdego/sub/notifications/" + updatedNotification.getTargetId(), updateMessage);
+        simpMessagingTemplate.convertAndSend("/urdego/sub/notifications/" + updatedNotification.getTargetId(), updatedNotification);
 
-        log.info("Updated notification : {} , isAccept : {} , isRead : {} ", updatedNotification.getNotificationId(), updatedNotification.isAccepted(), updatedNotification.isRead());
         //redis에 수정사항 저장
         //TODO 수정 후 redis에 저장이 안됨..;;
-        redisTemplate.opsForList().set(key,index, notifications);
+        redisTemplate.opsForList().set(key,index, updatedNotification);
         return updatedNotification;
     }
-
 
     @Override
     public void saveNotification(Notification notification) {
