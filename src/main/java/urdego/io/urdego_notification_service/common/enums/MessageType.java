@@ -4,16 +4,16 @@ public enum MessageType {
     // 알림
     NOTIFICATION,
     // 대기방
-    PLAYER_JOINED,
-    PLAYER_REMOVED,
+    PLAYER_JOIN,
+    PLAYER_REMOVE,
     PLAYER_READY,
-    CONTENT_SELECTED,
+    CONTENT_SELECT,
     // 게임
-    SCORE_UPDATED,
-    GAME_ENDED,
+    SCORE_UPDATE,
+    GAME_END,
     // 라운드 진행
-    QUESTION_GIVEN,
-    ANSWER_SUBMITTED
+    QUESTION_GIVE,
+    ANSWER_SUBMIT
 
 
 

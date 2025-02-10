@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class ReflectionUtil {
     private static final Map<Class<?>, Method> methodCache = new ConcurrentHashMap<>();
+    private ReflectionUtil(){}
 
     public static String getRoomIdFromResponse(Object response) {
         if (response == null) {

@@ -1,5 +1,7 @@
 package urdego.io.urdego_notification_service.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -15,6 +17,9 @@ import urdego.io.urdego_notification_service.controller.dto.request.room.Content
 import urdego.io.urdego_notification_service.controller.dto.request.room.PlayerReq;
 import urdego.io.urdego_notification_service.controller.util.ReflectionUtil;
 
+import java.sql.Ref;
+import java.util.Map;
+
 @Slf4j
 @Controller
 @RequiredArgsConstructor
@@ -22,15 +27,16 @@ public class NotificationSocketController {
 
     private final GameServiceClient gameServiceClient;
     private final SimpMessagingTemplate messagingTemplate;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @MessageMapping("/room/event")
     public void handleRoomEvent(WebSocketMessage<?> request) {
         Object response = null;
         switch (request.messageType()) {
-            case PLAYER_JOINED -> response = gameServiceClient.invitePlayer((PlayerReq) request.payload()).getBody();
-            case PLAYER_REMOVED -> response = gameServiceClient.removePlayer((PlayerReq) request.payload()).getBody();
-            case PLAYER_READY -> response = gameServiceClient.readyPlayer((PlayerReq) request.payload()).getBody();
-            case CONTENT_SELECTED -> response = gameServiceClient.selectContent((ContentSelectReq) request.payload()).getBody();
+            case PLAYER_JOIN -> response = gameServiceClient.invitePlayer(objectMapper.convertValue(request.payload(), PlayerReq.class)).getBody();
+            case PLAYER_REMOVE -> response = gameServiceClient.removePlayer(objectMapper.convertValue(request.payload(), PlayerReq.class)).getBody();
+            case PLAYER_READY -> response = gameServiceClient.readyPlayer(objectMapper.convertValue(request.payload(), PlayerReq.class)).getBody();
+            case CONTENT_SELECT -> response = gameServiceClient.selectContent(objectMapper.convertValue(request.payload(), ContentSelectReq.class)).getBody();
         }
         sendMessage(response, request.messageType());
     }
@@ -39,11 +45,10 @@ public class NotificationSocketController {
     public void handleGameEvent(WebSocketMessage<?> request) {
         Object response = null;
         switch (request.messageType()) {
-            case SCORE_UPDATED -> response = gameServiceClient.giveScores((ScoreReq) request.payload()).getBody();
-            case GAME_ENDED -> response = gameServiceClient.endGame((String) request.payload()).getBody();
-            case QUESTION_GIVEN -> response = gameServiceClient.giveQuestion((QuestionReq) request.payload()).getBody();
-            case ANSWER_SUBMITTED -> response = gameServiceClient.submitAnswer((AnswerReq) request.payload()).getBody();
-
+            case SCORE_UPDATE -> response = gameServiceClient.giveScores(objectMapper.convertValue(request.payload(), ScoreReq.class)).getBody();
+            case GAME_END -> response = gameServiceClient.endGame(objectMapper.convertValue(request.payload(), new TypeReference<Map<String, String>>() {}).get("gameId")).getBody();
+            case QUESTION_GIVE -> response = gameServiceClient.giveQuestion(objectMapper.convertValue(request.payload(), QuestionReq.class)).getBody();
+            case ANSWER_SUBMIT -> response = gameServiceClient.submitAnswer(objectMapper.convertValue(request.payload(), AnswerReq.class)).getBody();
         }
         sendMessage(response, request.messageType());
     }
