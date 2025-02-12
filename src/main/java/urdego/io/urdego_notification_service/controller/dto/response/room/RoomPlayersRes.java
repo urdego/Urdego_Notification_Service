@@ -9,7 +9,7 @@ public record RoomPlayersRes(
         String roomId,
         Status status,
         List<String> currentPlayers,
-        String isHost,
+        String host,
         Map<String, Boolean> readyStatus,
         Boolean allReady
 ) {
