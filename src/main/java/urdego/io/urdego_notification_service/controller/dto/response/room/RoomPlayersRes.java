@@ -8,7 +8,7 @@ import java.util.Map;
 public record RoomPlayersRes(
         String roomId,
         Status status,
-        List<String> currentPlayers,
+        List<PlayerRes> currentPlayers,
         String host,
         Map<String, Boolean> readyStatus,
         Boolean allReady
