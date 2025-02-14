@@ -1,5 +1,6 @@
 package urdego.io.urdego_notification_service.domain.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -28,6 +29,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final GameServiceClient gameServiceClient;
     private static final String PREFIX = "urdego_notification:";
     private static final long EXPIRATION_TIME = 2; //2일
+    private final ObjectMapper objectMapper;
 
     @Override
     public WebSocketMessage<Notification> publishNotification(NotificationRequest request) {
@@ -80,8 +82,8 @@ public class NotificationServiceImpl implements NotificationService {
         if(rawNotification == null || rawNotification.size() == 0) { throw NotFoundNotification.EXCEPTION;}
 
         //Object -> Notification
-        List<Notification> notifications = rawNotification.stream().filter(obj -> obj instanceof Notification)
-                .map(obj -> (Notification) obj).collect(Collectors.toList());
+        List<Notification> notifications = rawNotification.stream().map(obj -> objectMapper.convertValue(obj, Notification.class))
+                .collect(Collectors.toList());
 
         return notifications;
     }
