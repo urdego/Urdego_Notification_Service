@@ -2,6 +2,7 @@ package urdego.io.urdego_notification_service.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -33,9 +34,11 @@ public class Notification implements Serializable {
     private Action action;
 
     //수락여부
+    @JsonProperty("accepted")
     private boolean isAccepted;
 
     //읽기 여부
+    @JsonProperty("read")
     private boolean isRead;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
