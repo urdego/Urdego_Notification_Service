@@ -2,7 +2,9 @@ package urdego.io.urdego_notification_service.common.enums;
 
 public enum MessageType {
     // 알림
-    NOTIFICATION,
+    ALBERT,
+    INVITE_PLAYER,
+    REPLY,
     // 대기방
     PLAYER_JOIN,
     PLAYER_REMOVE,

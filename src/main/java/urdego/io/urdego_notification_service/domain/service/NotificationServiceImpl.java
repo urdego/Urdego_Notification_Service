@@ -33,7 +33,7 @@ public class NotificationServiceImpl implements NotificationService {
     public WebSocketMessage<Notification> publishNotification(NotificationRequest request) {
         Notification notification = Notification.of(request);
         //프로토콜 감싸기
-        WebSocketMessage<Notification> message = new WebSocketMessage<>(MessageType.NOTIFICATION, notification);
+        WebSocketMessage<Notification> message = new WebSocketMessage<>(MessageType.INVITE_PLAYER, notification);
         simpMessagingTemplate.convertAndSend("/urdego/sub/notifications/" + notification.getTargetId(), message);
         log.info("Published notification : senderId {}, targetId {}  " , notification.getSenderId(), notification.getTargetId());
 
@@ -43,11 +43,11 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public Notification updateReadStatus(ReplyRequest request, Long userId) {
+    public Notification updateReadStatus(ReplyRequest request) {
         // 키 생성
-        String key = PREFIX + userId;
+        String key = PREFIX + request.userId();
 
-        List<Notification> notifications = readNotificationList(userId);
+        List<Notification> notifications = readNotificationList(request.userId());
 
         //notificationId의 알림 index 찾기 없으면 Exception!!
         int index = IntStream.range(0, notifications.size())
