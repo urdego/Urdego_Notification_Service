@@ -9,6 +9,7 @@ public enum MessageType {
     PLAYER_READY,
     CONTENT_SELECT,
     // 게임
+    GAME_START,
     SCORE_UPDATE,
     GAME_END,
     // 라운드 진행
