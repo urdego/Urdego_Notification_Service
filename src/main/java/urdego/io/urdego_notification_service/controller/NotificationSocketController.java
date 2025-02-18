@@ -12,6 +12,7 @@ import urdego.io.urdego_notification_service.controller.client.GameServiceClient
 import urdego.io.urdego_notification_service.controller.dto.WebSocketMessage;
 import urdego.io.urdego_notification_service.controller.dto.request.ReplyRequest;
 import urdego.io.urdego_notification_service.controller.dto.request.game.AnswerReq;
+import urdego.io.urdego_notification_service.controller.dto.request.game.GameCreateReq;
 import urdego.io.urdego_notification_service.controller.dto.request.game.QuestionReq;
 import urdego.io.urdego_notification_service.controller.dto.request.game.ScoreReq;
 import urdego.io.urdego_notification_service.controller.dto.request.notification.NotificationRequest;
@@ -20,7 +21,6 @@ import urdego.io.urdego_notification_service.controller.dto.request.room.PlayerR
 import urdego.io.urdego_notification_service.controller.util.ReflectionUtil;
 import urdego.io.urdego_notification_service.domain.service.NotificationService;
 
-import java.sql.Ref;
 import java.util.Map;
 
 @Slf4j
@@ -49,6 +49,7 @@ public class NotificationSocketController {
     public void handleGameEvent(WebSocketMessage<?> request) {
         Object response = null;
         switch (request.messageType()) {
+            case GAME_START -> response = gameServiceClient.startGame(objectMapper.convertValue(request.payload(), GameCreateReq.class)).getBody();
             case SCORE_UPDATE -> response = gameServiceClient.giveScores(objectMapper.convertValue(request.payload(), ScoreReq.class)).getBody();
             case GAME_END -> response = gameServiceClient.endGame(objectMapper.convertValue(request.payload(), new TypeReference<Map<String, String>>() {}).get("gameId")).getBody();
             case QUESTION_GIVE -> response = gameServiceClient.giveQuestion(objectMapper.convertValue(request.payload(), QuestionReq.class)).getBody();
