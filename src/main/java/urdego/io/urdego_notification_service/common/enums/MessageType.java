@@ -14,7 +14,8 @@ public enum MessageType {
     GAME_END,
     // 라운드 진행
     QUESTION_GIVE,
-    ANSWER_SUBMIT
+    ANSWER_SUBMIT,
+    ROUND_RESULT
 
 
 
