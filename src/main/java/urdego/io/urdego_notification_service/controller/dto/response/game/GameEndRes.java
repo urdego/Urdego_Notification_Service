@@ -8,7 +8,7 @@ public record GameEndRes(
         String gameId,
         String roomId,
         Status status,
-        Map<String, Integer> totalScores,
-        Map<String, Integer> exp
+        Map<Long, Integer> totalScores,
+        Map<Long, Integer> exp
 ) {
 }

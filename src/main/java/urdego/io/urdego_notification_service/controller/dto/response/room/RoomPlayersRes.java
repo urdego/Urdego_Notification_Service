@@ -7,6 +7,7 @@ import java.util.Map;
 
 public record RoomPlayersRes(
         String roomId,
+        String roomName,
         Status status,
         List<PlayerRes> currentPlayers,
         String host,
