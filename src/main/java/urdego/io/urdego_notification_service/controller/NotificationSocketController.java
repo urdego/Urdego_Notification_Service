@@ -11,9 +11,12 @@ import urdego.io.urdego_notification_service.common.enums.MessageType;
 import urdego.io.urdego_notification_service.controller.client.GameServiceClient;
 import urdego.io.urdego_notification_service.controller.dto.WebSocketMessage;
 import urdego.io.urdego_notification_service.controller.dto.request.game.*;
+import urdego.io.urdego_notification_service.controller.dto.request.ReplyRequest;
+import urdego.io.urdego_notification_service.controller.dto.request.notification.NotificationRequest;
 import urdego.io.urdego_notification_service.controller.dto.request.room.ContentSelectReq;
 import urdego.io.urdego_notification_service.controller.dto.request.room.PlayerReq;
 import urdego.io.urdego_notification_service.controller.util.ReflectionUtil;
+import urdego.io.urdego_notification_service.domain.service.NotificationService;
 
 import java.util.Map;
 
@@ -25,6 +28,7 @@ public class NotificationSocketController {
     private final GameServiceClient gameServiceClient;
     private final SimpMessagingTemplate messagingTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final NotificationService notificationService;
 
     @MessageMapping("/room/event")
     public void handleRoomEvent(WebSocketMessage<?> request) {
@@ -52,6 +56,14 @@ public class NotificationSocketController {
         sendMessage(response, request.messageType());
     }
 
+    @MessageMapping("/notification/event")
+    public void handleNotificationEvent(WebSocketMessage<?> request) {
+        Object response = null;
+        switch (request.messageType()) {
+            case INVITE_PLAYER -> response = notificationService.publishNotification(objectMapper.convertValue(request.payload(), NotificationRequest.class));
+            case REPLY -> response = notificationService.updateReadStatus(objectMapper.convertValue(request.payload(), ReplyRequest.class));
+        }
+    }
     private <T> void sendMessage(T response, MessageType messageType) {
         if (response == null) {
             log.info("빈 응답이므로 기본 메시지를 전송합니다.");
