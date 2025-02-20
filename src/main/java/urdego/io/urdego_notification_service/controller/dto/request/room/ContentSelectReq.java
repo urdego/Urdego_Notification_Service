@@ -4,7 +4,7 @@ import java.util.List;
 
 public record ContentSelectReq(
         String roomId,
-        String userId,
+        Long userId,
         List<String> contentIds
 ) {
 }
