@@ -2,6 +2,7 @@ package urdego.io.urdego_notification_service.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -33,37 +34,59 @@ public class NotificationSocketController {
     @MessageMapping("/room/event")
     public void handleRoomEvent(WebSocketMessage<?> request) {
         Object response = null;
-        switch (request.messageType()) {
-            case PLAYER_JOIN -> response = gameServiceClient.invitePlayer(objectMapper.convertValue(request.payload(), PlayerReq.class)).getBody();
-            case PLAYER_REMOVE -> response = gameServiceClient.removePlayer(objectMapper.convertValue(request.payload(), PlayerReq.class)).getBody();
-            case PLAYER_READY -> response = gameServiceClient.readyPlayer(objectMapper.convertValue(request.payload(), PlayerReq.class)).getBody();
-            case CONTENT_SELECT -> response = gameServiceClient.selectContent(objectMapper.convertValue(request.payload(), ContentSelectReq.class)).getBody();
+        try {
+            switch (request.messageType()) {
+                case PLAYER_JOIN -> response = gameServiceClient.invitePlayer(objectMapper.convertValue(request.payload(), PlayerReq.class)).getBody();
+                case PLAYER_REMOVE -> response = gameServiceClient.removePlayer(objectMapper.convertValue(request.payload(), PlayerReq.class)).getBody();
+                case PLAYER_READY -> response = gameServiceClient.readyPlayer(objectMapper.convertValue(request.payload(), PlayerReq.class)).getBody();
+                case CONTENT_SELECT -> response = gameServiceClient.selectContent(objectMapper.convertValue(request.payload(), ContentSelectReq.class)).getBody();
+            }
+            sendMessage(response, request.messageType());
+        } catch (FeignException e) {
+            log.error("Feign Client 요청 실패: {}", e.getMessage());
+            sendErrorMessage(request.messageType(), "게임 서비스와 통신 중 오류가 발생했습니다.");
+        } catch (Exception e) {
+            log.error("WebSocket 핸들링 중 오류 발생: {}", e.getMessage());
+            sendErrorMessage(request.messageType(), "서버 내부 오류가 발생했습니다.");
         }
-        sendMessage(response, request.messageType());
     }
 
     @MessageMapping("/game/event")
     public void handleGameEvent(WebSocketMessage<?> request) {
         Object response = null;
-        switch (request.messageType()) {
-            case GAME_START -> response = gameServiceClient.startGame(objectMapper.convertValue(request.payload(), GameCreateReq.class)).getBody();
-            case SCORE_UPDATE -> response = gameServiceClient.giveScores(objectMapper.convertValue(request.payload(), ScoreReq.class)).getBody();
-            case GAME_END -> response = gameServiceClient.endGame(objectMapper.convertValue(request.payload(), new TypeReference<Map<String, String>>() {}).get("gameId")).getBody();
-            case QUESTION_GIVE -> response = gameServiceClient.giveQuestion(objectMapper.convertValue(request.payload(), QuestionReq.class)).getBody();
-            case ANSWER_SUBMIT -> response = gameServiceClient.submitAnswer(objectMapper.convertValue(request.payload(), AnswerReq.class)).getBody();
-            case ROUND_RESULT -> response = gameServiceClient.roundResult(objectMapper.convertValue(request.payload(), CoordinateReq.class)).getBody();
+        try {
+            switch (request.messageType()) {
+                case GAME_START -> response = gameServiceClient.startGame(objectMapper.convertValue(request.payload(), GameCreateReq.class)).getBody();
+                case SCORE_UPDATE -> response = gameServiceClient.giveScores(objectMapper.convertValue(request.payload(), ScoreReq.class)).getBody();
+                case GAME_END -> response = gameServiceClient.endGame(objectMapper.convertValue(request.payload(), new TypeReference<Map<String, String>>() {}).get("gameId")).getBody();
+                case QUESTION_GIVE -> response = gameServiceClient.giveQuestion(objectMapper.convertValue(request.payload(), QuestionReq.class)).getBody();
+                case ANSWER_SUBMIT -> response = gameServiceClient.submitAnswer(objectMapper.convertValue(request.payload(), AnswerReq.class)).getBody();
+                case ROUND_RESULT -> response = gameServiceClient.roundResult(objectMapper.convertValue(request.payload(), CoordinateReq.class)).getBody();
+            }
+            sendMessage(response, request.messageType());
+        } catch (FeignException e) {
+            log.error("Feign Client 요청 실패: {}", e.getMessage());
+            sendErrorMessage(request.messageType(), "게임 서비스와 통신 중 오류가 발생했습니다.");
+        } catch (Exception e) {
+            log.error("WebSocket 핸들링 중 오류 발생: {}", e.getMessage());
+            sendErrorMessage(request.messageType(), "서버 내부 오류가 발생했습니다.");
         }
-        sendMessage(response, request.messageType());
     }
 
     @MessageMapping("/notification/event")
     public void handleNotificationEvent(WebSocketMessage<?> request) {
         Object response = null;
-        switch (request.messageType()) {
-            case INVITE_PLAYER -> response = notificationService.publishNotification(objectMapper.convertValue(request.payload(), NotificationRequest.class));
-            case REPLY -> response = notificationService.updateReadStatus(objectMapper.convertValue(request.payload(), ReplyRequest.class));
+        try {
+            switch (request.messageType()) {
+                case INVITE_PLAYER -> response = notificationService.publishNotification(objectMapper.convertValue(request.payload(), NotificationRequest.class));
+                case REPLY -> response = notificationService.updateReadStatus(objectMapper.convertValue(request.payload(), ReplyRequest.class));
+            }
+        } catch (Exception e) {
+            log.error("WebSocket 핸들링 중 오류 발생: {}", e.getMessage());
+            sendErrorMessage(request.messageType(), "서버 내부 오류가 발생했습니다.");
         }
     }
+
     private <T> void sendMessage(T response, MessageType messageType) {
         if (response == null) {
             log.info("빈 응답이므로 기본 메시지를 전송합니다.");
@@ -78,5 +101,12 @@ public class NotificationSocketController {
         } catch (IllegalArgumentException e) {
             log.error("roomId 조회 실패: {}", e.getMessage());
         }
+    }
+
+    private void sendErrorMessage(MessageType messageType, String errorMessage) {
+        messagingTemplate.convertAndSend(
+                "/urdego/sub/errors",
+                new WebSocketMessage<>(messageType, Map.of("error", errorMessage))
+        );
     }
 }
