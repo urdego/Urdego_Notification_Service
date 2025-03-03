@@ -17,8 +17,8 @@ public enum MessageType {
     // 라운드 진행
     QUESTION_GIVE,
     ANSWER_SUBMIT,
-    ROUND_RESULT
-
-
+    ROUND_RESULT,
+    // 오류
+    ERROR
 
 }

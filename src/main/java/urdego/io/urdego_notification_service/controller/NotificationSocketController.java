@@ -107,7 +107,7 @@ public class NotificationSocketController {
         log.error("WebSocket 에러 메시지 전송: type={}, message={}", messageType, errorMessage);
         messagingTemplate.convertAndSend(
                 "/urdego/sub/errors",
-                new WebSocketMessage<>(messageType, Map.of("error", errorMessage))
+                new WebSocketMessage<>(MessageType.ERROR, Map.of("error", errorMessage, "originalType", messageType.name()))
         );
     }
 }
