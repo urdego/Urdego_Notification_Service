@@ -10,6 +10,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @SpringBootApplication
 public class UrdegoNotificationServiceApplication {
 
+    
     public static void main(String[] args) {
         SpringApplication.run(UrdegoNotificationServiceApplication.class, args);
     }
