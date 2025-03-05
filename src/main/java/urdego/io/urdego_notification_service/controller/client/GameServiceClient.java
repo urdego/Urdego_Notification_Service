@@ -10,6 +10,8 @@ import urdego.io.urdego_notification_service.controller.dto.request.room.PlayerR
 import urdego.io.urdego_notification_service.controller.dto.response.game.*;
 import urdego.io.urdego_notification_service.controller.dto.response.room.RoomPlayersRes;
 
+import java.util.Map;
+
 @FeignClient(name = "game-service")
 public interface GameServiceClient {
     @PostMapping("/api/game-service/room/player/invite")
@@ -23,6 +25,9 @@ public interface GameServiceClient {
 
     @PostMapping("/api/game-service/room/select-content")
     ResponseEntity<Void> selectContent(@RequestBody ContentSelectReq request);
+
+    @PostMapping("/api/game-service/room/delete")
+    ResponseEntity<Void> deleteRoom(@RequestBody Map<String, String> request);
 
     @PostMapping("/api/game-service/game/start")
     ResponseEntity<GameCreateRes> startGame(@RequestBody GameCreateReq request);
