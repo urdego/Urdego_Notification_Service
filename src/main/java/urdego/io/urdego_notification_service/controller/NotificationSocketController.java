@@ -16,6 +16,7 @@ import urdego.io.urdego_notification_service.controller.dto.request.ReplyRequest
 import urdego.io.urdego_notification_service.controller.dto.request.notification.NotificationRequest;
 import urdego.io.urdego_notification_service.controller.dto.request.room.ContentSelectReq;
 import urdego.io.urdego_notification_service.controller.dto.request.room.PlayerReq;
+import urdego.io.urdego_notification_service.controller.dto.response.game.GameEndRes;
 import urdego.io.urdego_notification_service.controller.util.ReflectionUtil;
 import urdego.io.urdego_notification_service.domain.service.NotificationService;
 
@@ -58,7 +59,13 @@ public class NotificationSocketController {
             switch (request.messageType()) {
                 case GAME_START -> response = gameServiceClient.startGame(objectMapper.convertValue(request.payload(), GameCreateReq.class)).getBody();
                 case SCORE_UPDATE -> response = gameServiceClient.giveScores(objectMapper.convertValue(request.payload(), ScoreReq.class)).getBody();
-                case GAME_END -> response = gameServiceClient.endGame(objectMapper.convertValue(request.payload(), new TypeReference<Map<String, String>>() {}).get("gameId")).getBody();
+                case GAME_END -> {
+                    String gameId = objectMapper.convertValue(request.payload(), new TypeReference<Map<String, String>>() {}).get("gameId");
+                    response = gameServiceClient.endGame(gameId).getBody();
+                    sendGameEndEvent(((GameEndRes) response).roomId(), gameId);
+                    Thread.sleep(2000);
+                    gameServiceClient.deleteRoom(Map.of("roomId", ((GameEndRes) response).roomId()));
+                }
                 case QUESTION_GIVE -> response = gameServiceClient.giveQuestion(objectMapper.convertValue(request.payload(), QuestionReq.class)).getBody();
                 case ANSWER_SUBMIT -> response = gameServiceClient.submitAnswer(objectMapper.convertValue(request.payload(), AnswerReq.class)).getBody();
                 case ROUND_RESULT -> response = gameServiceClient.roundResult(objectMapper.convertValue(request.payload(), CoordinateReq.class)).getBody();
@@ -108,6 +115,14 @@ public class NotificationSocketController {
         messagingTemplate.convertAndSend(
                 "/urdego/sub/errors",
                 new WebSocketMessage<>(MessageType.ERROR, Map.of("error", errorMessage, "originalType", messageType.name()))
+        );
+    }
+
+    private void sendGameEndEvent(String roomId, String gameId) {
+        log.info("게임 종료 이벤트 전송 | roomId: {}, gameId: {}", roomId, gameId);
+        messagingTemplate.convertAndSend(
+                "/urdego/sub/" + roomId,
+                new WebSocketMessage<>(MessageType.GAME_END, Map.of("gameId", gameId))
         );
     }
 }
