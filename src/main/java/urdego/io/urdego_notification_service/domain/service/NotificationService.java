@@ -21,4 +21,7 @@ public interface NotificationService {
 
     //조회
     List<Notification> readNotificationList(Long userId);
+
+    //수락 시 알림 락
+    boolean tryLockNotification(UUID notificationId);
 }
