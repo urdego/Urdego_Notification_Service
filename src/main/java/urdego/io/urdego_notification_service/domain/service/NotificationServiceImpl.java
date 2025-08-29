@@ -7,6 +7,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import urdego.io.urdego_notification_service.common.enums.MessageType;
+import urdego.io.urdego_notification_service.common.exception.notification.AlreadyAcceptedNotification;
 import urdego.io.urdego_notification_service.common.exception.notification.InvalidNotificationId;
 import urdego.io.urdego_notification_service.common.exception.notification.NotFoundNotification;
 import urdego.io.urdego_notification_service.controller.client.GameServiceClient;
@@ -15,7 +16,9 @@ import urdego.io.urdego_notification_service.controller.dto.request.ReplyRequest
 import urdego.io.urdego_notification_service.controller.dto.request.notification.NotificationRequest;
 import urdego.io.urdego_notification_service.domain.entity.Notification;
 
+import java.time.Duration;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -57,12 +60,25 @@ public class NotificationServiceImpl implements NotificationService {
                 .findFirst().orElseThrow(() -> InvalidNotificationId.EXCEPTION);
 
         Notification updatedNotification = notifications.get(index);
+        //3초간 락
+        boolean isLock = tryLockNotification(updatedNotification.getNotificationId());
+
+        if (updatedNotification.isAccepted()) {
+            log.info("Notification {} already accepted. Skipping re-processing.", updatedNotification.getNotificationId());
+            return updatedNotification;
+        }
+        if (!isLock) {
+            log.warn("Notification {} already checked notification", updatedNotification.getNotificationId());
+            throw AlreadyAcceptedNotification.EXCEPTION;
+        }
+
+
         updatedNotification.updateReply(request.isAccepted());
         simpMessagingTemplate.convertAndSend("/urdego/sub/notifications/" + updatedNotification.getTargetId(), updatedNotification);
 
         //redis에 수정사항 저장
-        //TODO 수정 후 redis에 저장이 안됨..;;
         redisTemplate.opsForList().set(key,index, updatedNotification);
+        log.info("Reply notification : senderId {}, targetId {}  " , updatedNotification.getSenderId(), updatedNotification.getTargetId());
         return updatedNotification;
     }
 
@@ -87,4 +103,13 @@ public class NotificationServiceImpl implements NotificationService {
 
         return notifications;
     }
+
+    @Override
+    public boolean tryLockNotification(UUID notificationId) {
+            String lockKey = "lock:notification:" + notificationId;
+            return Boolean.TRUE.equals(
+                    redisTemplate.opsForValue().setIfAbsent(lockKey, "LOCKED", Duration.ofSeconds(3))
+            );
+    }
+
 }
