@@ -1,115 +1,64 @@
 package urdego.io.urdego_notification_service.domain.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import urdego.io.urdego_notification_service.common.enums.MessageType;
-import urdego.io.urdego_notification_service.common.exception.notification.AlreadyAcceptedNotification;
-import urdego.io.urdego_notification_service.common.exception.notification.InvalidNotificationId;
-import urdego.io.urdego_notification_service.common.exception.notification.NotFoundNotification;
+import urdego.io.urdego_notification_service.common.exception.notification.NotificationSendFailed;
 import urdego.io.urdego_notification_service.controller.client.GameServiceClient;
 import urdego.io.urdego_notification_service.controller.dto.WebSocketMessage;
 import urdego.io.urdego_notification_service.controller.dto.request.ReplyRequest;
 import urdego.io.urdego_notification_service.controller.dto.request.notification.NotificationRequest;
 import urdego.io.urdego_notification_service.domain.entity.Notification;
+import urdego.io.urdego_notification_service.domain.service.components.NotificationRedisManager;
 
-import java.time.Duration;
 import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @RequiredArgsConstructor
 @Service
 @Slf4j
 public class NotificationServiceImpl implements NotificationService {
+    private final NotificationRedisManager redisManager;
     private final SimpMessagingTemplate simpMessagingTemplate;
-    private final RedisTemplate<String, Object> redisTemplate;
     private final GameServiceClient gameServiceClient;
-    private static final String PREFIX = "urdego_notification:";
-    private static final long EXPIRATION_TIME = 2; //2일
-    private final ObjectMapper objectMapper;
+
 
     @Override
     public WebSocketMessage<Notification> publishNotification(NotificationRequest request) {
         Notification notification = Notification.of(request);
+        //메세지 Redis에 저장
+        redisManager.saveNotification(notification);
+
         //프로토콜 감싸기
         WebSocketMessage<Notification> message = new WebSocketMessage<>(MessageType.INVITE_PLAYER, notification);
-        simpMessagingTemplate.convertAndSend("/urdego/sub/notifications/" + notification.getTargetId(), message);
-        log.info("Published notification : senderId {}, targetId {}  " , notification.getSenderId(), notification.getTargetId());
+        try {
+            simpMessagingTemplate.convertAndSend("/urdego/sub/notifications/" + notification.getTargetId(), message);
+            log.info("Published notification : senderId {}, targetId {}  " , notification.getSenderId(), notification.getTargetId());
+        } catch (Exception e){
+            //@todo : Fallback 메서드가 필요하지 않을까? 재전송 로직
+            log.error("Notification Send Fail in NotificationService : notification ID {} ", notification.getNotificationId());
+            throw NotificationSendFailed.EXCEPTION;
+        }
 
-        //redis 저장
-        saveNotification(notification);
         return message;
     }
 
     @Override
     public Notification updateReadStatus(ReplyRequest request) {
-        // 키 생성
-        String key = PREFIX + request.userId();
-
-        List<Notification> notifications = readNotificationList(request.userId());
-
-        //notificationId의 알림 index 찾기 없으면 Exception!!
-        int index = IntStream.range(0, notifications.size())
-                .filter(i -> notifications.get(i).getNotificationId().toString().equals(request.notificationId()))
-                .findFirst().orElseThrow(() -> InvalidNotificationId.EXCEPTION);
-
-        Notification updatedNotification = notifications.get(index);
-        //3초간 락
-        boolean isLock = tryLockNotification(updatedNotification.getNotificationId());
-
-        if (updatedNotification.isAccepted()) {
-            log.info("Notification {} already accepted. Skipping re-processing.", updatedNotification.getNotificationId());
-            return updatedNotification;
-        }
-        if (!isLock) {
-            log.warn("Notification {} already checked notification", updatedNotification.getNotificationId());
-            throw AlreadyAcceptedNotification.EXCEPTION;
-        }
-
-
+        Notification updatedNotification = redisManager.updateReadStatus(request);
         updatedNotification.updateReply(request.isAccepted());
+
         simpMessagingTemplate.convertAndSend("/urdego/sub/notifications/" + updatedNotification.getTargetId(), updatedNotification);
 
-        //redis에 수정사항 저장
-        redisTemplate.opsForList().set(key,index, updatedNotification);
-        log.info("Reply notification : senderId {}, targetId {}  " , updatedNotification.getSenderId(), updatedNotification.getTargetId());
         return updatedNotification;
     }
 
-    @Override
-    public void saveNotification(Notification notification) {
-        String key = PREFIX + notification.getTargetId();
-        redisTemplate.opsForList().rightPush(key, notification);
-        redisTemplate.expire(key,EXPIRATION_TIME, TimeUnit.DAYS);
-    }
 
     @Override
     public List<Notification> readNotificationList(Long userId) {
-        // 키 생성
-        String key = PREFIX + userId;
-
-        List<Object> rawNotification = redisTemplate.opsForList().range(key, 0, -1);
-        if(rawNotification == null || rawNotification.size() == 0) { throw NotFoundNotification.EXCEPTION;}
-
-        //Object -> Notification
-        List<Notification> notifications = rawNotification.stream().map(obj -> objectMapper.convertValue(obj, Notification.class))
-                .collect(Collectors.toList());
-
+        List<Notification> notifications = redisManager.readNotificationList(userId);
         return notifications;
-    }
-
-    @Override
-    public boolean tryLockNotification(UUID notificationId) {
-            String lockKey = "lock:notification:" + notificationId;
-            return Boolean.TRUE.equals(
-                    redisTemplate.opsForValue().setIfAbsent(lockKey, "LOCKED", Duration.ofSeconds(3))
-            );
     }
 
 }

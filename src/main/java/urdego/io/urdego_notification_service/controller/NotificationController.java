@@ -27,5 +27,6 @@ public class NotificationController {
         List<Notification> notifications = notificationService.readNotificationList(userId);
         return ResponseEntity.ok(notifications);
     }
+
 }
 

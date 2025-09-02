@@ -10,9 +10,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface NotificationService {
-    //저장
-    void saveNotification(Notification notification);
-
     //메세지 발행
     public WebSocketMessage<Notification> publishNotification(NotificationRequest notificationRequest);
 
@@ -22,6 +19,4 @@ public interface NotificationService {
     //조회
     List<Notification> readNotificationList(Long userId);
 
-    //수락 시 알림 락
-    boolean tryLockNotification(UUID notificationId);
 }

@@ -9,6 +9,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import urdego.io.urdego_notification_service.common.enums.MessageType;
+import urdego.io.urdego_notification_service.common.exception.BaseException;
 import urdego.io.urdego_notification_service.controller.client.GameServiceClient;
 import urdego.io.urdego_notification_service.controller.dto.WebSocketMessage;
 import urdego.io.urdego_notification_service.controller.dto.request.game.*;
@@ -88,6 +89,9 @@ public class NotificationSocketController {
                 case INVITE_PLAYER -> response = notificationService.publishNotification(objectMapper.convertValue(request.payload(), NotificationRequest.class));
                 case REPLY -> response = notificationService.updateReadStatus(objectMapper.convertValue(request.payload(), ReplyRequest.class));
             }
+        }catch (BaseException e) {
+            log.error("도메인 예외 발생 {} : {}",e.getClass().getSimpleName(), e.getMessage());
+            sendErrorMessage(request.messageType(), e.getMessage());
         } catch (Exception e) {
             log.error("WebSocket 핸들링 중 오류 발생: {}", e.getMessage());
             sendErrorMessage(request.messageType(), "서버 내부 오류가 발생했습니다.");
