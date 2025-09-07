@@ -39,6 +39,7 @@ class NotificationServiceImplTest {
 
         //when
         WebSocketMessage<Notification> result = notificationService.publishNotification(dummyRequest);
+
         //then
         assertNotNull(result);
         assertEquals(MessageType.INVITE_PLAYER, result.messageType());
@@ -91,7 +92,7 @@ class NotificationServiceImplTest {
     }
 
     @Test
-    @DisplayName("")
+    @DisplayName("알림 리스트 조회 성공")
     void readNotificationList_should(){
         NotificationRequest dummyRequest = new NotificationRequest("123", "TestGameRoom",
                 1L, "TestHost", 2L, "TestGuest", "INVITE");
