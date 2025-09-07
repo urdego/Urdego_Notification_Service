@@ -45,20 +45,17 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public Notification updateReadStatus(ReplyRequest request) {
-        Notification updatedNotification = redisManager.updateReadStatus(request);
-        updatedNotification.updateReply(request.isAccepted());
-
+    public Notification updateStatus(ReplyRequest request) {
+        Notification updatedNotification = redisManager.updateRedisStatus(request);
         simpMessagingTemplate.convertAndSend("/urdego/sub/notifications/" + updatedNotification.getTargetId(), updatedNotification);
-
         return updatedNotification;
     }
 
 
     @Override
     public List<Notification> readNotificationList(Long userId) {
-        List<Notification> notifications = redisManager.readNotificationList(userId);
-        return notifications;
+        List<Notification> notificationList = redisManager.readNotificationList(userId);
+        return notificationList;
     }
 
 }

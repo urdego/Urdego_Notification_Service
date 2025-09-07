@@ -14,7 +14,7 @@ public interface NotificationService {
     public WebSocketMessage<Notification> publishNotification(NotificationRequest notificationRequest);
 
     // 답장 및 읽음 상태 변경
-    Notification updateReadStatus(ReplyRequest request);
+    Notification updateStatus(ReplyRequest request);
 
     //조회
     List<Notification> readNotificationList(Long userId);

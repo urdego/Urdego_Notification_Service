@@ -23,12 +23,14 @@ import java.util.stream.IntStream;
 @Slf4j
 public class NotificationRedisManager {
     private final RedisTemplate<String, Object> redisTemplate;
-    private static final String PREFIX = "urdego_notification:";
-    private static final long EXPIRATION_TIME = 2; //2일
     private final ObjectMapper objectMapper;
 
+    private static final String PREFIX = "urdego_notification:";
+    private static final long EXPIRATION_TIME = 2; //2일
+
     public void saveNotification(Notification notification) {
-        String key = PREFIX + notification.getTargetId();
+        String key = genKey(notification.getTargetId());
+
         redisTemplate.opsForList().rightPush(key, notification);
         redisTemplate.expire(key,EXPIRATION_TIME, TimeUnit.DAYS);
         log.info("save Notification : Notification ID {}", notification.getNotificationId());
@@ -36,8 +38,7 @@ public class NotificationRedisManager {
 
 
     public List<Notification> readNotificationList(Long userId) {
-        // 키 생성
-        String key = PREFIX + userId;
+        String key = genKey(userId);
 
         List<Object> rawNotification = redisTemplate.opsForList().range(key, 0, -1);
         log.info("rawNotification List<Obj> : {} ", rawNotification.size());
@@ -50,9 +51,9 @@ public class NotificationRedisManager {
         return notifications;
     }
 
-    public Notification updateReadStatus(ReplyRequest request) {
+    public Notification updateRedisStatus(ReplyRequest request) {
         // 키 생성
-        String key = PREFIX + request.userId();
+        String key = genKey(request.userId());
         List<Notification> notifications = readNotificationList(request.userId());
 
         //notificationId의 알림 index 찾기 없으면 Exception!!
@@ -87,5 +88,9 @@ public class NotificationRedisManager {
         return Boolean.TRUE.equals(
                 redisTemplate.opsForValue().setIfAbsent(lockKey, "LOCKED", Duration.ofSeconds(3))
         );
+    }
+
+    public static String genKey(Long userId){
+        return PREFIX+userId;
     }
 }

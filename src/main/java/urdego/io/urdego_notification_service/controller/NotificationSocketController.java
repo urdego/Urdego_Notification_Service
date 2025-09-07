@@ -87,7 +87,7 @@ public class NotificationSocketController {
         try {
             switch (request.messageType()) {
                 case INVITE_PLAYER -> response = notificationService.publishNotification(objectMapper.convertValue(request.payload(), NotificationRequest.class));
-                case REPLY -> response = notificationService.updateReadStatus(objectMapper.convertValue(request.payload(), ReplyRequest.class));
+                case REPLY -> response = notificationService.updateStatus(objectMapper.convertValue(request.payload(), ReplyRequest.class));
             }
         }catch (BaseException e) {
             log.error("도메인 예외 발생 {} : {}",e.getClass().getSimpleName(), e.getMessage());
